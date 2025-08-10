@@ -1,0 +1,155 @@
+{
+  "name": "Phishing Link Detector Bot",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "86e289f4-7364-4e78-b7de-d27307dac702",
+              "name": "url",
+              "value": "http://phishyexample.com",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        176,
+        0
+      ],
+      "id": "2acf7693-5a2e-414d-9a48-116f04806809",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.virustotal.com/api/v3/urls",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-apikey",
+              "value": "dad1baeeb0b0b1c9f00e78eda4865340013e007e17338bb08e6fb0b4a653a0f2"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{$json[\"url\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        384,
+        0
+      ],
+      "id": "a8fb6a25-a790-41c1-b598-112526f4ceae",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "url": "=https://www.virustotal.com/api/v3/analyses/{{$json[\"data\"][\"id\"]}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-apikey",
+              "value": "dad1baeeb0b0b1c9f00e78eda4865340013e007e17338bb08e6fb0b4a653a0f2"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        592,
+        0
+      ],
+      "id": "66404991-b36b-4da9-89f9-d04e57678fb0",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract results from VirusTotal\nconst stats = $json.data.attributes.stats;\nconst malicious = stats.malicious || 0;\nconst suspicious = stats.suspicious || 0;\n\nlet status;\nif (malicious > 0 || suspicious > 0) {\n  status = \"🚨 Danger: This link is unsafe!\";\n} else {\n  status = \"✅ Safe: No issues found.\";\n}\n\nreturn [{\n  json: {\n    status,\n    stats\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        0
+      ],
+      "id": "3ebc91f3-37de-4654-ab22-f45690a1dfbf",
+      "name": "Code"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a7dc8065-b7c4-4e63-b557-d6aa51fbdd9f",
+      "name": "When clicking ‘Execute workflow’"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "50b1471b-6869-4930-84e9-2c2b901676f6",
+  "meta": {
+    "instanceId": "da9119c92392096d367e19f13fa42cda9a6bc01dac7f5e63606688d5f51bdf07"
+  },
+  "id": "QfSsnjw4P4lwpV3W",
+  "tags": []
+}
